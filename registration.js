@@ -11,17 +11,13 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-import { createAppContainer } from 'react-navigation';
-import { createStackNavigator } from 'react-navigation-stack';
 import {firebase} from '@react-native-firebase/auth';
-import WalkinVisitorsScreen from './walkin';
-import RegScreen from './registration';
 
-class LoginScreen extends React.Component {
+class RegScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      email: '@test.com',
+      email: '',
       password: '',
       errors: {},
       isLoading: false,
@@ -32,68 +28,26 @@ class LoginScreen extends React.Component {
     this.setState({
       [item]: val,
     });
-  };
+  }
 
-  authenticate = () => {
-    const {password} = this.state;
-    let {email} = this.state;
-    email.includes('@test.com')
-      ? null
-      : (email = this.state.email + '@test.com');
-    // let email = 'tester@test.cc',
-    // password = '123456';
-    if (this.isValid()) {
+ register = () => {
+    const {email,password} = this.state;
+
       this.setState({isLoading: true});
       firebase
         .auth()
-        .signInWithEmailAndPassword(email.trim().toLowerCase(), password.trim())
+        .createUserWithEmailAndPassword(email,password)
         .then(this.onLoginSuccess)
         .catch(error => {
           this.setState({isLoading: false});
           alert(error.message);
         });
-    }
   };
 
   onLoginSuccess = () => {
     alert('success');
-    this.setState({isLoading: false, email: '@test.com', password: ''});
-    this.props.navigation.navigate('WalkinVisitorsScreen');
-  };
-
-  isValid = () => {
-    let regex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    let valid = true;
-    let errors = {};
-    const {email, password} = this.state;
-    if (
-      (email === '' || email.length === 0) &&
-      (password === '' || password.length === 0)
-    ) {
-      errors.email = 'Email cannot be empty';
-      errors.password = 'Password cannot be empty';
-      valid = false;
-    } else {
-      if (email === '' || email.length === 0) {
-        errors.email = 'Email cannot be empty';
-        valid = false;
-      }
-
-      if (password === '' || password.length === 0) {
-        errors.password = 'Password cannot be empty';
-        valid = false;
-      }
-      if (!regex.test(email) && email.length < 2) {
-        errors.email = 'Please enter a valid email';
-        valid = false;
-      }
-      if (password.length < 6 && password.length > 1) {
-        errors.password = 'Password should contain atleast 6 characters';
-        valid = false;
-      }
-    }
-    this.setState({errors});
-    return valid;
+    this.setState({isLoading: false, email: '', password: ''});
+    this.props.navigation.navigate('LoginScreen');
   };
 
   render() {
@@ -144,12 +98,9 @@ class LoginScreen extends React.Component {
               <View style={styles.container3}>
                 <TouchableOpacity
                   style={styles.Button}
-                  onPress={this.authenticate}>
-                  <Text style={styles.text}>Login</Text>
+                  onPress={this.register}>
+                  <Text style={styles.text}>Register</Text>
                 </TouchableOpacity>
-              </View>
-              <View style={styles.container2}>
-                <Text style={{fontSize:17,color:'blue'}} onPress={() => this.props.navigation.navigate('RegScreen')}>Create a new account?</Text>
               </View>
             </View>
           </KeyboardAvoidingView>
@@ -159,7 +110,7 @@ class LoginScreen extends React.Component {
   }
 }
 
-
+export default RegScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -218,17 +169,3 @@ const styles = StyleSheet.create({
     height: 30,
   },
 });
-
-
-const AppNavigator = createStackNavigator(
-  {
-    LoginScreen: LoginScreen,
-    WalkinVisitorsScreen: WalkinVisitorsScreen,
-    RegScreen:RegScreen
-  },
-  {
-    initialRouteName: 'LoginScreen',
-  }
-);
-
-export default createAppContainer(AppNavigator);
